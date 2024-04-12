@@ -1,0 +1,102 @@
+.todo-details-container {
+  width: 72vw;
+  margin: 5px auto;
+  padding: 10px;
+}
+
+.todo-details-container h2 {
+  margin: 20px;
+}
+
+.action-buttons-container {
+  padding-left: 20px;
+}
+
+.action-buttons-container > button {
+  min-width: 3rem;
+  cursor: pointer;
+  height: 1.5rem;
+  margin-right: 1rem;
+}
+
+.todo-details-container section {
+  margin: 20px;
+}
+
+.todo-details-container h4 {
+  margin-bottom: 10px;
+}
+
+.todo-details {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.todo-details div {
+  /* border: 1px solid black; */
+  width: calc((100% - 40px) / 2);
+  margin: 0 10px 10px 0;
+}
+
+.detail-label {
+  width: 8rem;
+}
+
+.detail-value {
+  width: 13rem;
+}
+
+.todo-details span {
+  display: inline-block;
+}
+
+.todo-decription-section textarea {
+  width: 100%;
+  height: 5rem;
+  resize: none;
+  padding: 5px;
+}
+
+.todo-iterations-section table,
+.todo-iterations-section th,
+.todo-iterations-section td {
+  border: 1px solid black;
+  border-collapse: collapse;
+  padding: 5px;
+}
+
+.todo-danger-zone-section ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.todo-danger-zone-control {
+  border: 1px solid black;
+  margin: 0 0 1rem 0;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.todo-danger-zone-control button {
+  cursor: pointer;
+  border-radius: 5px;
+  background-color: transparent;
+  color: red;
+  border: 1px solid #6a6363;
+  font-weight: bold;
+  padding: 5px 10px;
+}
+
+.todo-danger-zone-control button:hover {
+  color: wheat;
+  background-color: red;
+  border-color: red;
+}
+
+@media only screen and (max-width: 800px) {
+  .todo-details-container {
+    width: 550px;
+  }
+}

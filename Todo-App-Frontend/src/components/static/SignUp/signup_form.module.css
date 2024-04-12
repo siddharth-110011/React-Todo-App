@@ -1,0 +1,77 @@
+.form-container {
+  border: 1px solid black;
+  padding: 5px;
+  margin: 30px auto;
+  width: 500px;
+  box-shadow: 0px 2px 8px 5px #b1b1b1;
+  border-radius: 2%;
+}
+.form-body {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.form-control {
+  margin: 5px 10px 15px;
+  height: 70px;
+}
+.form-control > label {
+  display: block;
+}
+.form-control {
+  width: calc((500px - 52px) / 2);
+}
+.form-header {
+  padding: 5px 5px 5px 10px;
+  font-weight: bold;
+}
+.btn input[type="submit"] {
+  margin: 10px;
+  cursor: pointer;
+  padding: 5px;
+  width: calc(100% - 10px - 20px);
+}
+
+.form-control > input {
+  width: 100%;
+  height: 1.5rem;
+  border-radius: 3px;
+  border: 1px solid black;
+}
+
+.error-msg {
+  width: 100%;
+  font-size: 13px;
+  color: red;
+}
+.btn > input {
+  border-radius: 5px;
+  background-color: purple;
+  color: white;
+}
+
+.form-invalid-msg {
+  margin-left: 10px;
+  width: calc((500px - 52px) / 2);
+}
+
+.checkbox input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+.checkbox {
+  margin: 10px;
+}
+
+@media only screen and (max-width: 800px) {
+  .form-container {
+    width: 300px;
+  }
+  .form-control {
+    width: calc((300px - 52px));
+  }
+  .form-invalid-msg {
+    width: calc((300px - 52px));
+  }
+  
+}
