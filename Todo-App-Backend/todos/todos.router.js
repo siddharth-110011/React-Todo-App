@@ -22,6 +22,12 @@ router.post(
   todosController.add_todo
 );
 
+router.put(
+  "/",
+  usersController.authenticate_token,
+  todosController.edit_todo
+);
+
 router.delete(
   "/",
   usersController.authenticate_token,

@@ -1,14 +1,12 @@
 const express = require("express");
 const app = express();
+const cookie = require("cookie");
 
 require("dotenv").config();
 
 // This is an Express method used to set various settings or properties on
 // the application object.
 app.set("port", process.env.PORT || 3000);
-
-const todosRouter = require("./todos/todos.router.js");
-const usersRouter = require("./users/users.router.js");
 
 app.use(express.json()); // Parse JSON request bodies
 
@@ -23,7 +21,7 @@ app.use((req, res, next) => {
 app.use((req, res, next) => {
     res.header("Access-Control-Allow-Origin", req.headers.origin);
     res.header("Access-Control-Allow-Headers", "Content-Type");
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE");
     res.header("Access-Control-Allow-Credentials", true);
 
     /* For the preflight request the request method is of type options. That is why
@@ -36,8 +34,50 @@ app.use((req, res, next) => {
     next();
 })
 
-app.use("/todos", todosRouter);
-app.use("/users", usersRouter);
+app.post("/getCookie", (req, res) => {
+  let token = cookie.serialize("token", "Token 123", {
+    domain: "localhost",
+    path: "/",
+    httpOnly: true,
+    secure: false,
+    // sameSite: "none",
+  });
+  // Setting the cookie 'token' at the client side.
+  res.setHeader("Set-Cookie", token);
+  res.send("Cookie sent!");
+});
+
+app.get("/sendCookie", (req, res) => {
+  const cookiesReceived = cookie.parse(req.headers.cookie || "");
+  console.log("Cookie Received:", cookiesReceived);
+
+  if (!isObjectEmpty(cookiesReceived)) {
+    res.send("Cookie received!");
+  } else {
+    res.send("Cookie not received!");
+  }
+});
+
+app.get("/deleteCookie", (req, res) => {
+  const cookiesReceived = cookie.parse(req.headers.cookie || "");
+  console.log("Cookie Received:", cookiesReceived);
+
+  res.clearCookie("token");
+
+  if (!isObjectEmpty(cookiesReceived)) {
+    res.send("Cookie received and cleared!");
+  } else {
+    res.send("Cookie not received!");
+  }
+});
+
+const isObjectEmpty = (objectName) => {
+  return (
+    objectName &&
+    Object.keys(objectName).length === 0 &&
+    objectName.constructor === Object
+  );
+};
 
 app.get("*", (req, res) => {
   res.status(404).send("Invalid path");

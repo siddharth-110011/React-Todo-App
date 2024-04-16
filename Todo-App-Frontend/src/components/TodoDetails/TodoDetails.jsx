@@ -9,41 +9,23 @@ import { TodoManager } from "../TodoManager/TodoManager";
 import { Backdrop } from "../UI/Backdrop/Backdrop";
 
 import { TodosContext } from "../../TodosContext.js";
-import { transformTodoListBackendData } from "../../utils/utility.js";
+import {
+  transformTodoListBackendData,
+  getFormattedDateTimeForUI,
+} from "../../utils/utility.js";
 
 export const TodoDetails = ({ user }) => {
-  // let initialTodoDetails = {
-  //   taskId: "101",
-  //   todoName: "Buying Groceries",
-  //   todoType: "Daily Task",
-  //   todoStatus: "InProgress",
-  //   priority: "High",
-  //   deadLine: "16-March-2024",
-  //   startDateTime: "16-December-2024, 9:00AM",
-  //   endDateTime: "16-March-2024,10:00AM",
-  // };
-
   const navigate = useNavigate();
 
   const { todoId } = useParams();
   console.log(todoId);
 
   const { todos: todosData, setTodos: setTodosData } = useContext(TodosContext);
-  console.log(todosData);
-
-  // const initialTodoDetails = todosData.find(todo => todo.id == todoId);
+  // console.log(todosData);
 
   const [todoDetails, setTodoDetails] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
-  let message = `Buy the following    items:
-1. Eggs
-2. Bread
-3. Butter
-4. Apples
-5. Milk
-6. Dal`;
 
   useEffect(() => {
     const fetchTodoDetails = async () => {
@@ -58,10 +40,26 @@ export const TodoDetails = ({ user }) => {
 
         const data = await response.json();
         let transformedData = transformTodoListBackendData([data]);
-        console.log(data);
-        console.log(transformedData);
+        // console.log(data);
+        // console.log(transformedData);
 
-        setTodoDetails(transformedData[0]);
+        const tempTodoDetails = transformedData[0];
+
+        if (tempTodoDetails.iterationDetails.length > 0) {
+          tempTodoDetails.startDateTime =
+            tempTodoDetails.iterationDetails[0].startDateTime;
+
+          if (tempTodoDetails.todoStatus === "Done") {
+            tempTodoDetails.endDateTime =
+              tempTodoDetails.iterationDetails[
+                tempTodoDetails.iterationDetails.length - 1
+              ].endDateTime;
+          }
+        }
+
+        // console.log(tempTodoDetails);
+
+        setTodoDetails(tempTodoDetails);
         setIsLoading(false);
       } catch (err) {
         console.error("Error fetching todo details:", err);
@@ -79,9 +77,37 @@ export const TodoDetails = ({ user }) => {
     setIsEditing(false);
   }
 
-  function handleTaskEdited(task) {
+  async function handleTaskEdited(task) {
     console.log("Saving task:");
     console.log(task);
+
+    const todo = {
+      userId: +user.userId,
+      todoId: +todoId,
+      ...task,
+    };
+
+    const response = await fetch("http://localhost:3001/todos", {
+      method: "PUT",
+      body: JSON.stringify({ todo }),
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json();
+
+    setIsEditing(false);
+    setTodoDetails({...todoDetails, ...todo});
+    setTodosData(todosData.map(t => {
+      if(t.todoId === +todoId) {
+        return todo;
+      }
+      else {
+        return t;
+      }
+    }));
   }
 
   function handleNavigationToTodoList() {
@@ -114,35 +140,43 @@ export const TodoDetails = ({ user }) => {
               </span>
             </div>
             <div>
-              <span className={styles["detail-label"]}>Status: </span>
+              <span className={styles["detail-label"]}>Status:</span>
               <span className={styles["detail-value"]}>
                 {todoDetails.todoStatus}
               </span>
             </div>
             <div>
-              <span className={styles["detail-label"]}>Priority: </span>
+              <span className={styles["detail-label"]}>Priority:</span>
               <span className={styles["detail-value"]}>
                 {todoDetails.priority}
               </span>
             </div>
             <div>
-              <span className={styles["detail-label"]}>Deadline: </span>
+              <span className={styles["detail-label"]}>Deadline:</span>
               <span className={styles["detail-value"]}>
-                {todoDetails.deadLine || "NA"}
+                {todoDetails.deadline
+                  ? getFormattedDateTimeForUI(todoDetails.deadline)
+                  : "NA"}
               </span>
             </div>
-            <div>
-              <span className={styles["detail-label"]}>Start Date Time: </span>
-              <span className={styles["detail-value"]}>
-                {todoDetails.startDateTime || "-"}
-              </span>
-            </div>
-            <div>
-              <span className={styles["detail-label"]}>End Date Time: </span>
-              <span className={styles["detail-value"]}>
-                {todoDetails.endDateTime || "-"}
-              </span>
-            </div>
+            {todoDetails.iterationDetails.length > 0 ? (
+              <>
+                <div>
+                  <span className={styles["detail-label"]}>
+                    Start Date Time:
+                  </span>
+                  <span className={styles["detail-value"]}>
+                    {getFormattedDateTimeForUI(todoDetails.startDateTime)}
+                  </span>
+                </div>
+                <div>
+                  <span className={styles["detail-label"]}>End Date Time:</span>
+                  <span className={styles["detail-value"]}>
+                    {todoDetails.endDateTime || "NA"}
+                  </span>
+                </div>
+              </>
+            ) : null}
           </div>
         </section>
         <section className={styles["todo-decription-section"]}>
@@ -162,22 +196,19 @@ export const TodoDetails = ({ user }) => {
               </tbody>
               <tbody>
                 {todoDetails.iterationDetails.map((iterationDetail) => (
-                  <tr>
-                    <td>{iterationDetail.start_datetime}</td>
-                    <td>{iterationDetail.start_datetime}</td>
-                    <td></td>
+                  <tr key={iterationDetail.iterationNumber}>
+                    <td>{getFormattedDateTimeForUI(iterationDetail.startDateTime)}</td>
+                    <td>{iterationDetail.endDateTime || "NA"}</td>
+                    <td>
+                      {iterationDetail.endDateTime
+                        ? getTimeTook(
+                            iterationDetail.startDateTime,
+                            iterationDetail.endDateTime
+                          )
+                        : "NA"}
+                    </td>
                   </tr>
                 ))}
-                {/* <tr>
-                <td>18-March-2024, 10:00 AM</td>
-                <td>18-March-2024, 11:00 AM</td>
-                <td>1 hr</td>
-              </tr>
-              <tr>
-                <td>18-March-2024, 10:00 AM</td>
-                <td>18-March-2024, 11:00 AM</td>
-                <td>1 hr</td>
-              </tr> */}
               </tbody>
             </table>
           </section>
@@ -215,6 +246,11 @@ export const TodoDetails = ({ user }) => {
             mode="edit"
             onCancel={handleCloseEditTask}
             onSave={handleTaskEdited}
+            todoName={todoDetails.todoName}
+            todoType={todoDetails.todoType}
+            deadline={todoDetails.deadline}
+            priority={todoDetails.priority}
+            todoDescription={todoDetails.todoDescription}
           />
         </>
       ) : null}

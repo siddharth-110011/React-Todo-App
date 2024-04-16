@@ -1,4 +1,4 @@
-.add-task-container {
+.todo-manager-container {
     background-color: papayawhip;
     width: 40vw;
     height: 350px;
@@ -36,7 +36,7 @@
     height: 1.5rem;
 }
 
-.task-description-container {
+.todo-description-container {
     flex-basis: 100%;
 }
 
@@ -62,7 +62,8 @@
 }
 
 @media only screen and (max-width:900px) {
-    .add-task-container {
-        width: 400px;
+    .todo-manager-container {
+        width: 440px;
+        left: 5vw
     }
 }

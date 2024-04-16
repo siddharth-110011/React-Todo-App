@@ -34,18 +34,18 @@ export function TodoList({ user }) {
 
   const lastPage = Math.ceil(totalTodosFetched / todosPerPage);
 
-  console.log(`lastPage: ${lastPage}`);
-  console.log(`todosGotInLastFetch: ${todosGotInLastFetch}`);
-  console.log(`totalTodosFetched: ${totalTodosFetched}`);
+  // console.log(`lastPage: ${lastPage}`);
+  // console.log(`todosGotInLastFetch: ${todosGotInLastFetch}`);
+  // console.log(`totalTodosFetched: ${totalTodosFetched}`);
 
   useEffect(() => {
     let offsetFromTodosData = Math.ceil(todosData.length / todosLimit);
-    console.log("$$");
 
     /* Even though useEffect() would run when the dependency 'offset' 
     changes we still need that to conditionally run the fetching of todos
     only when needed. */
     if (todosData.length === 0 || offsetFromTodosData < offset) {
+      console.log("Fetching more todos...");
       fetch(
         `http://localhost:3001/todos/?userId=${user.userId}&page=${offset}&limit=${todosLimit}`,
         {
@@ -59,9 +59,9 @@ export function TodoList({ user }) {
         .then((response) => response.json())
         .then((data) => {
           if (data.todos.length > 0) {
-            console.log(data);
+            // console.log(data);
             let transformedData = transformTodoListBackendData(data.todos);
-            console.log(transformedData);
+            // console.log(transformedData);
             setTodosData([...todosData, ...transformedData]);
             setIsLoading(false);
             setTotalTodosFetched(totalTodosFetched + data.todos.length);
@@ -91,7 +91,7 @@ export function TodoList({ user }) {
   const { todos: todosData, setTodos: setTodosData } = useContext(TodosContext);
   console.log(todosData);
   const todos = todosData.map((todo, index) => {
-    return <Todo key={todo.taskId} todo={todo} index={index} />;
+    return <Todo key={todo.todoId} todo={todo} index={index} />;
   });
 
   const slicedTodos = todos.slice(

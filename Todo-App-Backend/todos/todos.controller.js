@@ -96,6 +96,33 @@ exports.add_todo = (req, res) => {
 
 };
 
+exports.edit_todo = (req, res) => {
+  console.log("req.body:");
+  console.log(req.body);
+
+  let userIdsMatching = compareUserIdsInTokenAndRequest(
+    req.body.todo.userId,
+    req.body.userDataFromToken.userId
+  );
+
+  if(userIdsMatching) {
+    todosService
+      .editTodo(req.body.todo)
+      .then((result) => {
+        console.log(result);
+        res.send({message: "Todo edited!"});
+      })
+      .catch((err) => {
+        console.log("Error occurred while editing a todo!");
+        res.status(err.error.statusCode).send(err);
+      });
+  }
+  else {
+    res.status(403).send(accessDeniedErrorResponse);
+  }
+
+};
+
 exports.delete_todo = (req, res) => {
   console.log("req.body:");
   console.log(req.body);
@@ -110,7 +137,7 @@ exports.delete_todo = (req, res) => {
       .deleteTodo(req.body.userId, req.body.todoId)
       .then((result) => {
         console.log(result);
-        res.send();
+        res.send({message: "Todo deleted!"});
       })
       .catch((err) => {
         console.log("Error occurred while deleting a todo!");

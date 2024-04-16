@@ -9,26 +9,30 @@ exports.getTodos = async (userId, page, limit) => {
       deadline from todo_details where user_id = ? limit ? offset ?;`;
       const pool = db.pool;
 
-      pool.query(sql, [userId, limit, (page-1)*limit], function (err, result) {
-        if (err) {
-          const internalError = new Error(err.message);
-          reject(
-            getErrorObject(
-              internalError,
-              500,
-              "Something went wrong in the server!"
-            )
-          );
-        } else {
-          console.log("Todos retrieved!");
-          resolve(result);
+      pool.query(
+        sql,
+        [userId, limit, (page - 1) * limit],
+        function (err, result) {
+          if (err) {
+            const internalError = new Error(err.message);
+            reject(
+              getErrorObject(
+                internalError,
+                500,
+                "Something went wrong in the server!"
+              )
+            );
+          } else {
+            console.log("Todos retrieved!");
+            resolve(result);
+          }
         }
-      });
+      );
     });
 
     const result = await promise;
 
-    return {userId: +userId, todos: result};
+    return { userId: +userId, todos: result };
   } catch (error) {
     sendErrorResponse(error);
   }
@@ -57,7 +61,7 @@ exports.getTodoDetails = async (userId, todoId) => {
         } else {
           console.log("Todo details retreived.");
           // console.log(result);
-          
+
           if (result[0].length == 0) {
             resolve();
           }
@@ -131,6 +135,55 @@ exports.addTodo = async (todo) => {
   } finally {
     connection.release(); // Release the connection back to the pool.
     console.log("Connection released!");
+  }
+};
+
+exports.editTodo = async (todo) => {
+  // Edit todo correpsonding to (userId, todoId).
+  try {
+    const promise = new Promise((resolve, reject) => {
+      const sql = `update todo_details set todo_name = ?, todo_type = ?, 
+      deadline = ?, priority = ?, todo_description = ?  
+      where user_id = ? and todo_id = ?;`;
+      const pool = db.pool;
+
+      pool.query(
+        sql,
+        [
+          todo.todoName,
+          todo.todoType,
+          todo.deadline,
+          todo.priority,
+          todo.todoDescription,
+          todo.userId,
+          todo.todoId,
+        ],
+        function (err, result) {
+          if (err) {
+            const internalError = new Error(err.message);
+            reject(
+              getErrorObject(
+                internalError,
+                500,
+                "Something went wrong in the server!"
+              )
+            );
+          } else {
+            // console.log(result);
+            console.log("Todo edited.");
+            resolve(result);
+          }
+        }
+      );
+    });
+
+    const result = await promise;
+
+    console.log(result);
+
+    return result;
+  } catch (error) {
+    sendErrorResponse(error);
   }
 };
 

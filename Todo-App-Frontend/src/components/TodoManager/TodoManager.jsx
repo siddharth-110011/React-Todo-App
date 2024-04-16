@@ -3,81 +3,76 @@ import styles from "./TodoManager.module.css";
 import { Button } from "../UI/Button";
 import { useState } from "react";
 
-export function TodoManager(props) {
-  const [taskName, setTaskName] = useState("");
-  const [taskType, setTaskType] = useState("Daily Task");
-  const [taskDeadline, setTaskDeadline] = useState(null);
-  const [taskPriority, setTaskPriority] = useState("Medium");
-  const [taskDescription, setTaskDescription] = useState("");
+import {
+  getFormattedDateTimeForDateTimeInput,
+  getFormattedDateForBackend,
+} from "../../utils/utility.js";
 
-  const [taskNamErrMsg, setTaskNameErrorMsg] = useState("");
-  const [isTaskNameValid, setIsTaskNameValid] = useState(false);
+export function TodoManager(props) {
+  console.log(props.deadline);
+
+  const [todoName, setTodoName] = useState(props.todoName || "");
+  const [todoType, setTodoType] = useState(props.todoType || "Daily Todo");
+  const [deadline, setDeadline] = useState(
+    props.deadline ? getFormattedDateTimeForDateTimeInput(props.deadline) : null
+  );
+  const [todoPriority, setTodoPriority] = useState(props.priority || "Medium");
+  const [todoDescription, setTodoDescription] = useState(
+    props.todoDescription || ""
+  );
+
+  console.log(deadline);
+
+  const [todoNameErrorMsg, setTodoNameErrorMsg] = useState("");
+  const [isTodoNameValid, setIsTodoNameValid] = useState(false);
 
   const [isFormTouched, setIsFormTouched] = useState(false);
   const isFormFilled = hasFormBeenFilled();
 
-  function handleTaskName(e) {
+  function handleTodoName(e) {
     let pattern = /^[a-zA-Z0-9. ]+$/;
-    setTaskName(e.target.value);
+    setTodoName(e.target.value);
     if (e.target.value == "") {
-      setTaskNameErrorMsg("Task name is required!");
-      setIsTaskNameValid(false);
+      setTodoNameErrorMsg("Todo name is required!");
+      setIsTodoNameValid(false);
     } else if (!pattern.test(e.target.value)) {
-      setIsTaskNameValid(false);
-      setTaskNameErrorMsg(
-        "Task name should contain only only a-z, A-Z, 0-9, space, ."
+      setIsTodoNameValid(false);
+      setTodoNameErrorMsg(
+        "Todo name should contain only only a-z, A-Z, 0-9, space, ."
       );
     } else if (e.target.value.length < 2 || e.target.value.length > 25) {
-      setIsTaskNameValid(false);
-      setTaskNameErrorMsg(
-        "Task name should have atleast 2 characters and a maximum of 30!"
+      setIsTodoNameValid(false);
+      setTodoNameErrorMsg(
+        "Todo name should have atleast 2 characters and a maximum of 30!"
       );
     } else {
-      setIsTaskNameValid(true);
+      setIsTodoNameValid(true);
 
-      setTaskNameErrorMsg("");
+      setTodoNameErrorMsg("");
     }
   }
 
-  function handleTaskType(e) {
-    setTaskType(e.target.value);
+  function handleTodoType(e) {
+    setTodoType(e.target.value);
   }
 
-  function handleTaskDeadline(e) {
-    const date = new Date(e.target.value);
-    const day = date.getDate();
-    const monthIndex = date.getMonth();
-    const year = date.getFullYear();
-    const monthNames = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-
-    const formattedDate = `${day}-${monthNames[monthIndex]}-${year}`;
-    console.log(formattedDate);
-    setTaskDeadline(formattedDate);
+  function handleTodoDeadline(e) {
+    let dateTime = isNaN(new Date(e.target.value))
+      ? null
+      : getFormattedDateForBackend(e.target.value);
+    setDeadline(dateTime);
   }
 
-  function handleTaskPriority(e) {
-    setTaskPriority(e.target.value);
+  function handleTodoPriority(e) {
+    setTodoPriority(e.target.value);
   }
 
-  function handleTaskDescription(e) {
-    setTaskDescription(e.target.value);
+  function handleTodoDescription(e) {
+    setTodoDescription(e.target.value);
   }
 
   function hasFormBeenFilled() {
-    if (taskName === "") {
+    if (todoName === "") {
       return false;
     } else {
       return true;
@@ -88,30 +83,30 @@ export function TodoManager(props) {
     e.preventDefault();
     setIsFormTouched(true);
 
-    if (isTaskNameValid) {
-      const task = {
-        todoName: taskName,
-        todoType: taskType,
-        priority: taskPriority,
+    if (isTodoNameValid) {
+      const todo = {
+        todoName: todoName,
+        todoType: todoType,
+        priority: todoPriority,
         todoStatus: "Not Started",
-        deadline: taskDeadline,
-        todoDescription: taskDescription,
+        deadline: todoDeadline,
+        todoDescription: todoDescription,
       };
-      props.onAdd(task);
+      props.onAdd(todo);
     }
   }
 
   function handleSave(e) {
     e.preventDefault();
-    const task = {
-      taskName: taskName,
-      taskType: taskType,
-      priority: taskPriority,
-      status: "Not Started",
-      deadLine: taskDeadline,
-      taskDescription: taskDescription,
+    const todo = {
+      todoName: todoName,
+      todoType: todoType,
+      priority: todoPriority,
+      todoStatus: "Not Started",
+      deadline: deadline,
+      todoDescription: todoDescription,
     };
-    props.onSave(task);
+    props.onSave(todo);
   }
 
   const actionBtn =
@@ -122,26 +117,31 @@ export function TodoManager(props) {
     );
 
   return (
-    <Card className={styles["add-task-container"]}>
-      <form onSubmit={handleAdd}>
+    <Card className={styles["todo-manager-container"]}>
+      <form>
         <div className={styles["form-header"]}>
-          {props.mode === "add" ? "Add" : "Edit"} Task
+          {props.mode === "add" ? "Add" : "Edit"} Todo
         </div>
         <div className={styles["form-body"]}>
           <div className={styles["form-control"]}>
             <label>
-              <span>Task Name:</span>
-              <input type="text" required onChange={handleTaskName} />
-              {!isTaskNameValid && isFormTouched ? (
-                <div className={styles["error-msg"]}>{taskNamErrMsg}</div>
+              <span>Todo Name:</span>
+              <input
+                type="text"
+                value={todoName}
+                required
+                onChange={handleTodoName}
+              />
+              {!isTodoNameValid && isFormTouched ? (
+                <div className={styles["error-msg"]}>{todoNameErrorMsg}</div>
               ) : null}
             </label>
           </div>
           <div className={styles["form-control"]}>
             <label>
-              <span>Task type:</span>
-              <select onChange={handleTaskType} value={taskType}>
-                <option value="Daily Task">Daily Task</option>
+              <span>Todo type:</span>
+              <select onChange={handleTodoType} value={todoType}>
+                <option value="Daily Todo">Daily Todo</option>
                 <option value="Project Specific">Project Specific</option>
                 <option value="Others">Others</option>
               </select>
@@ -152,16 +152,17 @@ export function TodoManager(props) {
               <span>Deadline:</span>
               <input
                 type="datetime-local"
+                value={deadline || "NA"}
                 min={new Date().toISOString().split("T")[0]}
-                disabled={taskType === "Daily Task" ? true : false}
-                onChange={handleTaskDeadline}
+                disabled={todoType === "Daily Todo" ? true : false}
+                onChange={handleTodoDeadline}
               />
             </label>
           </div>
           <div className={styles["form-control"]}>
             <label>
-              <span>Task priority:</span>
-              <select onChange={handleTaskPriority} value={taskPriority}>
+              <span>Todo priority:</span>
+              <select onChange={handleTodoPriority} value={todoPriority}>
                 <option value="High">High</option>
                 <option value="Medium">Medium</option>
                 <option value="Low">Low</option>
@@ -169,11 +170,14 @@ export function TodoManager(props) {
             </label>
           </div>
           <div
-            className={`${styles["form-control"]} ${styles["task-description-container"]}`}
+            className={`${styles["form-control"]} ${styles["todo-description-container"]}`}
           >
             <label>
-              <span>Task Description:</span>
-              <textarea onChange={handleTaskDescription}></textarea>
+              <span>Todo Description:</span>
+              <textarea
+                value={todoDescription}
+                onChange={handleTodoDescription}
+              ></textarea>
             </label>
           </div>
         </div>
