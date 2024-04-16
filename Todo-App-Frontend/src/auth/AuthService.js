@@ -6,11 +6,6 @@ export class AuthService {
   async login(user) {
     const { setIsAuthenticated } = this.authContextData;
 
-    // if(user.password === "abc123123") {
-    //     setAuthenticated(true);
-    //     console.log("Logged in!");
-    // }
-
     const response = await fetch("http://localhost:3001/users/login", {
       method: "POST",
       body: JSON.stringify({ user }),
@@ -35,6 +30,7 @@ export class AuthService {
 
   async logout() {
     // console.log(this.authContextData);
+
     const { setIsAuthenticated } = this.authContextData;
 
     const response = await fetch(
@@ -60,7 +56,6 @@ export class AuthService {
   }
 
   async validateSessionToken() {
-
     console.log("Inside validateSessionToken()");
     const response = await fetch(
       "http://localhost:3001/users/validateSessionToken",
@@ -76,11 +71,15 @@ export class AuthService {
     const data = await response.json();
     console.log(data);
 
-    if (data) {
+    if (!data.error) {
       console.log("Session maintained");
+
       return true;
     }
     else {
+      localStorage.removeItem("user");
+      localStorage.removeItem("isLoggedIn");
+      
       return false;
     }
   }

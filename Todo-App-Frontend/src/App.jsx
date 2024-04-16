@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Outlet, Navigate } from "react-router-dom";
 
 import { Login } from "./components/static/LoginForm/login_form";
 import { SignUp } from "./components/static/SignUp/signup_form";
@@ -12,12 +12,11 @@ import { ErrorPage } from "./components/ErrorPage/ErrorPage";
 import { AuthContext, useAuthContextData } from "./auth/AuthContext.js";
 
 import { TodosContext } from "./TodosContext.js";
-import { initialTodosData } from "./initialTodos.js";
 
 import "./App.css";
+import { AuthService } from "./auth/AuthService.js";
 
 export default function App() {
-  const isLoggedIn = localStorage.getItem("isLoggedIn") ? true : false;
   const userData = JSON.parse(localStorage.getItem("user"));
   let userDetails = null;
   if(userData) {
@@ -26,9 +25,20 @@ export default function App() {
     userDetails.useName = userData.userName;
   }
 
-  const [isAuthenticated, setIsAuthenticated] = useState(isLoggedIn);
+  const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [user, setUser] = useState(userDetails);
   const [todos, setTodos] = useState([]);
+  const authContextData = useAuthContextData();
+  const authService = new AuthService(null);
+
+  useEffect(() => {
+    console.log(authContextData);
+    console.log("Inside App.jsx useEffect()")
+    authService.validateSessionToken().then(isLoggedIn => {
+      console.log("isLoggedIn: " + isLoggedIn);
+      setIsAuthenticated(isLoggedIn);
+    });
+  }, []);
 
   return (
     <BrowserRouter>
@@ -46,13 +56,13 @@ export default function App() {
                 <Route
                   path="/login"
                   element={
-                    isAuthenticated ? <Navigate to="/todo-List" /> : <Login setUser={setUser} />
+                    isAuthenticated ? <Navigate to={"/todo-list"} /> : <Login setUser={setUser} />
                   }
                 />
                 <Route
                   path="/signup"
                   element={
-                    isAuthenticated ? <Navigate to="/todo-List" /> : <SignUp />
+                    isAuthenticated ? <Navigate to={"/todo-list"} /> : <SignUp />
                   }
                 />
 

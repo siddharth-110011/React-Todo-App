@@ -12,7 +12,7 @@ export function TodoManager(props) {
   console.log(props.deadline);
 
   const [todoName, setTodoName] = useState(props.todoName || "");
-  const [todoType, setTodoType] = useState(props.todoType || "Daily Todo");
+  const [todoType, setTodoType] = useState(props.todoType || "Daily Task");
   const [deadline, setDeadline] = useState(
     props.deadline ? getFormattedDateTimeForDateTimeInput(props.deadline) : null
   );
@@ -89,7 +89,7 @@ export function TodoManager(props) {
         todoType: todoType,
         priority: todoPriority,
         todoStatus: "Not Started",
-        deadline: todoDeadline,
+        deadline: deadline,
         todoDescription: todoDescription,
       };
       props.onAdd(todo);

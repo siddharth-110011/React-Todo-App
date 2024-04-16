@@ -13,7 +13,6 @@ export function Pagination({startPage, currentPage, onChangePage, endPage}) {
         key={i}
         className={currentPage == (i) ? styles["active"] : ""}
         onClick={() => onChangePage(i)}
-        href="#"
       >
         {i}
       </a>
@@ -34,9 +33,7 @@ export function Pagination({startPage, currentPage, onChangePage, endPage}) {
 
   return (
     <div className={styles["pagination"]}>
-      <a href="#" onClick={handlePreviousPage}>&laquo;</a>
       {pages}
-      <a href="#" onClick={handleNextPage}>&raquo;</a>
     </div>
   );
 }

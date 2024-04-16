@@ -1,7 +1,7 @@
 const db = require("../db-config/database");
 const { sendErrorResponse, getErrorObject } = require("../utils/utils.js");
 
-exports.getTodos = async (userId, page, limit) => {
+exports.getTodos = async (userId, offset, limit) => {
   // Get todo-list details for a specific userId.
   try {
     const promise = new Promise((resolve, reject) => {
@@ -11,7 +11,7 @@ exports.getTodos = async (userId, page, limit) => {
 
       pool.query(
         sql,
-        [userId, limit, (page - 1) * limit],
+        [userId, limit, offset],
         function (err, result) {
           if (err) {
             const internalError = new Error(err.message);

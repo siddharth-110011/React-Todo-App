@@ -19,7 +19,7 @@ export function TodoList({ user }) {
 
   /* todosLimit is the control to limit the number of todos that would 
   be fetched in one request. */
-  const todosLimit = 10;
+  const todosLimit = 12;
 
   /* todosPerPage is the control to limit the number of todos that would 
   be displayed in one page in the UI. */
@@ -29,25 +29,24 @@ export function TodoList({ user }) {
   const [startPage, setStartPage] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [endPage, setEndPage] = useState(1);
-  const [offset, setOffset] = useState(1);
+  const [todosOffset, setTodosOffset] = useState(0);
   const [todosGotInLastFetch, setTodosGotInLastFetch] = useState(0);
 
   const lastPage = Math.ceil(totalTodosFetched / todosPerPage);
 
-  // console.log(`lastPage: ${lastPage}`);
-  // console.log(`todosGotInLastFetch: ${todosGotInLastFetch}`);
-  // console.log(`totalTodosFetched: ${totalTodosFetched}`);
+  console.log(`lastPage: ${lastPage}`);
+  console.log(`todosGotInLastFetch: ${todosGotInLastFetch}`);
+  console.log(`totalTodosFetched: ${totalTodosFetched}`);
 
   useEffect(() => {
-    let offsetFromTodosData = Math.ceil(todosData.length / todosLimit);
-
-    /* Even though useEffect() would run when the dependency 'offset' 
-    changes we still need that to conditionally run the fetching of todos
+    console.log("Inside useEffect()");
+    /* Even though useEffect() would run when the dependency 'currentPage' 
+    changes we still need to conditionally run the fetching of todos
     only when needed. */
-    if (todosData.length === 0 || offsetFromTodosData < offset) {
+    if (todosData.length === 0 || currentPage === lastPage) {
       console.log("Fetching more todos...");
       fetch(
-        `http://localhost:3001/todos/?userId=${user.userId}&page=${offset}&limit=${todosLimit}`,
+        `http://localhost:3001/todos/?userId=${user.userId}&offset=${todosOffset}&limit=${todosLimit}`,
         {
           method: "get",
           credentials: "include",
@@ -62,34 +61,47 @@ export function TodoList({ user }) {
             // console.log(data);
             let transformedData = transformTodoListBackendData(data.todos);
             // console.log(transformedData);
-            setTodosData([...todosData, ...transformedData]);
+
+            let todosInLastPage = todosData.slice(
+              (lastPage - 1) * todosPerPage
+            ).length;
+
+            setTodosData([
+              ...todosData,
+              ...transformedData,
+            ]);
             setIsLoading(false);
-            setTotalTodosFetched(totalTodosFetched + data.todos.length);
+            setTotalTodosFetched(
+              totalTodosFetched + data.todos.length
+            );
+
             setTodosGotInLastFetch(data.todos.length);
 
             if (endPage === 1) {
               setEndPage(Math.ceil(data.todos.length / todosPerPage));
+            } else {
+              setEndPage(
+                endPage +
+                  Math.ceil(
+                    (data.todos.length -
+                      (todosPerPage - todosInLastPage)) / todosPerPage
+                  )
+              );
             }
           }
         });
-    } else {
-      setOffset(offsetFromTodosData);
-      setIsLoading(false);
-      setTotalTodosFetched(todos.length);
-      let result = todosData.length % todosLimit;
-      let todosGotInLastFetchFromTodosData = result === 0 ? todosLimit : result;
-      setTodosGotInLastFetch(todosGotInLastFetchFromTodosData);
-
-      let endPageFromTodosData =
-        todosData.length >= todosLimit
-          ? Math.ceil(todosLimit / todosPerPage)
-          : Math.ceil(todosData.length / todosPerPage);
-      setEndPage(endPageFromTodosData);
     }
-  }, [offset]);
+    else {
+      setTotalTodosFetched(todosData.length);
+      setIsLoading(false);
+      setTodosOffset(todosData.length);
+      setEndPage(Math.ceil(todosData.length / todosPerPage));
+    }
+  }, [currentPage]);
 
   const { todos: todosData, setTodos: setTodosData } = useContext(TodosContext);
-  console.log(todosData);
+  // console.log(todosData);
+
   const todos = todosData.map((todo, index) => {
     return <Todo key={todo.todoId} todo={todo} index={index} />;
   });
@@ -101,28 +113,13 @@ export function TodoList({ user }) {
 
   function handlePageChange(askedPage) {
     console.log(`askedPage: ${askedPage}`);
-    if (askedPage <= lastPage) {
-      setCurrentPage(askedPage);
-    }
+    setCurrentPage(askedPage);
 
-    /* We try to send request to fetch data every time the user is on the
-    last page. */
     if (askedPage === lastPage) {
-      console.log("Get another batch of todos data!");
-      let calculatedOffset;
-      if (todosGotInLastFetch === todosLimit) {
-        calculatedOffset = Math.ceil(totalTodosFetched / todosLimit) + 1;
-      } else {
-        calculatedOffset = Math.ceil(totalTodosFetched / todosLimit);
-      }
-      setOffset(calculatedOffset);
-    }
-    if (askedPage < startPage) {
-      setStartPage(startPage - 1);
-      setEndPage(endPage - 1);
-    } else if (askedPage > endPage && askedPage <= lastPage) {
-      setStartPage(startPage + 1);
-      setEndPage(endPage + 1);
+      let calculatedTodosOffset =
+        (lastPage - 1) * todosPerPage +
+        todosData.slice((lastPage - 1) * todosPerPage).length;
+      setTodosOffset(calculatedTodosOffset);
     }
   }
 
@@ -159,7 +156,7 @@ export function TodoList({ user }) {
     setTodosData([
       ...todosData,
       {
-        taskId: data.added_todo_id,
+        todoId: data.added_todo_id,
         todoName: task.todoName,
         priority: task.priority,
         todoStatus: task.status,

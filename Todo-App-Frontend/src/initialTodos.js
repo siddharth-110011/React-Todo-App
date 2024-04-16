@@ -1,13 +1,13 @@
 export const initialTodosData = [
   {
-    taskId: 99,
+    todoId: 99,
     todoName: "Buying Groceries",
     priority: "High",
     todoStatus: "InProgress",
     deadline: "16-March-2024",
   },
   {
-    taskId: 100,
+    todoId: 100,
     todoName: "Do Cleaning",
     priority: "High",
     todoStatus: "Not Started",

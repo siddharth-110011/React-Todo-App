@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Navigate, useNavigate } from "react-router-dom";
+
 import styles from "./login_form.module.css";
 
 import { useAuthContextData } from "../../../auth/AuthContext";
@@ -19,6 +21,10 @@ export function Login({ setUser }) {
 
   const authContextData = useAuthContextData();
   const authService = new AuthService(authContextData);
+
+  const navigate = useNavigate();
+
+  console.log("Inside Login component");
 
   function validateEmail(e) {
     const pattern = /^[\w@#]{6,30}[.](com|in)$/;
@@ -88,6 +94,7 @@ export function Login({ setUser }) {
               userName: data.userName,
               userId: data.userId,
             });
+            navigate("/todo-list");
           }
         })
         .catch((err) => {

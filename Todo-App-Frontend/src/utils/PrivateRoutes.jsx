@@ -9,6 +9,12 @@ export const PrivateRoutes = () => {
     // console.log(authContextData);
 
     let auth = {"authenticated": authenticated};
+    console.log(auth);
+
+    if(auth.authenticated === null) {
+        return <Outlet />;
+    }
+
     return (
         auth.authenticated ? <Outlet /> : <Navigate to="/login" />
     );

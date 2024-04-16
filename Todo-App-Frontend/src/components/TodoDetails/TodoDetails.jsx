@@ -34,7 +34,7 @@ export const TodoDetails = ({ user }) => {
           `http://localhost:3001/todos/detail?userId=${user.userId}&todoId=${todoId}`,
           {
             method: "GET",
-            credentials: "include",
+            credentials: "include"
           }
         );
 
@@ -99,19 +99,43 @@ export const TodoDetails = ({ user }) => {
     const data = await response.json();
 
     setIsEditing(false);
-    setTodoDetails({...todoDetails, ...todo});
-    setTodosData(todosData.map(t => {
-      if(t.todoId === +todoId) {
-        return todo;
-      }
-      else {
-        return t;
-      }
-    }));
+    setTodoDetails({ ...todoDetails, ...todo });
+    setTodosData(
+      todosData.map((t) => {
+        if (t.todoId === +todoId) {
+          return todo;
+        } else {
+          return t;
+        }
+      })
+    );
   }
 
   function handleNavigationToTodoList() {
     navigate("/todo-list");
+  }
+
+  async function handleDeleteTodo() {
+    let shouldDelete = await confirm("Are you sure you want to delete this task?");
+    console.log(shouldDelete);
+    if (shouldDelete) {
+      const response = await fetch(`http://localhost:3001/todos?userId=${user.userId}&todoId=${+todoId}`, {
+        method: "DELETE",
+        credentials: "include"
+      });
+      const data = await response.json();
+      console.log(data);
+      setTodosData(
+        todosData.filter((t) => {
+          if (t.todoId === +todoId) {
+            return false;
+          } else {
+            return true;
+          }
+        })
+      );
+      navigate("/todo-list");
+    }
   }
 
   return !isLoading ? (
@@ -197,7 +221,9 @@ export const TodoDetails = ({ user }) => {
               <tbody>
                 {todoDetails.iterationDetails.map((iterationDetail) => (
                   <tr key={iterationDetail.iterationNumber}>
-                    <td>{getFormattedDateTimeForUI(iterationDetail.startDateTime)}</td>
+                    <td>
+                      {getFormattedDateTimeForUI(iterationDetail.startDateTime)}
+                    </td>
                     <td>{iterationDetail.endDateTime || "NA"}</td>
                     <td>
                       {iterationDetail.endDateTime
@@ -233,7 +259,9 @@ export const TodoDetails = ({ user }) => {
                 <div>Once this task is deleted, there is no going back.</div>
               </div>
               <div>
-                <button type="Submit">Delete this task</button>
+                <button type="Submit" onClick={handleDeleteTodo}>
+                  Delete this task
+                </button>
               </div>
             </li>
           </ul>

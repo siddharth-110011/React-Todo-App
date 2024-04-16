@@ -13,11 +13,11 @@ exports.get_todos = (req, res) => {
   );
 
 
-  let page = +req.query.page;
+  let offset = +req.query.offset;
   let limit = +req.query.limit;
 
-  if(isNaN(page) || page <= 0) {
-    page = 1;
+  if(isNaN(offset) || offset < 0) {
+    offset = 0;
   } 
 
   if(isNaN(limit) || limit < 0) {
@@ -26,7 +26,7 @@ exports.get_todos = (req, res) => {
 
   if(userIdsMatching) {
     todosService
-    .getTodos(req.query.userId, page, limit)
+    .getTodos(req.query.userId, offset, limit)
     .then((todoListDetails) => {
       res.send(todoListDetails);
     })
@@ -127,14 +127,17 @@ exports.delete_todo = (req, res) => {
   console.log("req.body:");
   console.log(req.body);
 
+  console.log("req.query:");
+  console.log(req.query);
+
   let userIdsMatching = compareUserIdsInTokenAndRequest(
-    req.body.userId,
+    +req.query.userId,
     req.body.userDataFromToken.userId
   );
 
   if(userIdsMatching) {
     todosService
-      .deleteTodo(req.body.userId, req.body.todoId)
+      .deleteTodo(req.query.userId, req.query.todoId)
       .then((result) => {
         console.log(result);
         res.send({message: "Todo deleted!"});
