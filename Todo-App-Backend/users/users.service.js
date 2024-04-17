@@ -88,6 +88,7 @@ exports.signupUser = async (user) => {
             );
           } else {
             let signUpResponse = result[1][0];
+            console.log(signUpResponse);
             resolve(signUpResponse);
           }
         }

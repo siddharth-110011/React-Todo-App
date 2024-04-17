@@ -20,7 +20,7 @@ export function SignUp() {
 
   const [isPasswordVisible, setPasswordVisibility] = useState(false);
 
-  const [isFormTouched, setFormTouched] = useState(false);
+  const [isFormTouched, setIsFormTouched] = useState(false);
 
   const isFormFilled = hasSignupFormBeenFilled();
 
@@ -37,6 +37,7 @@ export function SignUp() {
               name="username"
               autoComplete="off"
               onChange={validUserName}
+              value={username}
             />
             {usernameErrMsg ? (
               <div className={styles["error-msg"]}>{usernameErrMsg}</div>
@@ -50,6 +51,7 @@ export function SignUp() {
               name="email"
               autoComplete="off"
               onChange={validateEmail}
+              value={email}
             />
             {emailErrMsg ? (
               <div className={styles["error-msg"]}>{emailErrMsg}</div>
@@ -63,6 +65,7 @@ export function SignUp() {
               name="password"
               autoComplete="off"
               onChange={validPassword}
+              value={password}
             />
             {passwordErrMsg ? (
               <div className={styles["error-msg"]}>{passwordErrMsg}</div>
@@ -76,6 +79,7 @@ export function SignUp() {
               name="confirm-password"
               autoComplete="off"
               onChange={validConfirmPassword}
+              value={confirmPassword}
             />
             {confirmPasswordErrMsg ? (
               <div className={styles["error-msg"]}>{confirmPasswordErrMsg}</div>
@@ -204,10 +208,9 @@ export function SignUp() {
     }
   }
 
-  function handleOnSubmit(e) {
+  async function handleOnSubmit(e) {
     e.preventDefault();
-    setFormTouched(true);
-    
+    setIsFormTouched(true);
     if (
       usernameIsValid &&
       emailIsValid &&
@@ -215,6 +218,28 @@ export function SignUp() {
       confirmPasswordIsValid
     ) {
       console.log("Submitting the form...");
+      const response = await fetch("http://localhost:3001/users/signup", {
+        method: "POST",
+        body: JSON.stringify({
+          user: { userName: username, password: password, emailId: email },
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const data = await response.json();
+      console.log(data);
+
+      if (data.add_user_status === "user_added") {
+        // alert("User registered successfully!");
+        setUsername("");
+        setEmail("");
+        setPassword("");
+        setConfirmPassword("");
+        setIsFormTouched(false);
+      } else if (data.add_user_status === "duplicate_email_id") {
+        alert("This email id already exist!");
+      }
     }
   }
 }

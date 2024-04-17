@@ -150,7 +150,6 @@ exports.delete_todo = (req, res) => {
   else {
     res.status(403).send(accessDeniedErrorResponse);
   }
-
 };
 
 exports.add_todo_iteration = (req, res) => {
@@ -165,18 +164,67 @@ exports.add_todo_iteration = (req, res) => {
   if(userIdsMatching) {
     todosService
       .addTodoIteration(req.body.userId, req.body.todoId)
-      .then((todoId) => {
-        res.send(todoId);
+      .then((addTodoIterationesponse) => {
+        res.send(addTodoIterationesponse);
       })
       .catch((err) => {
-        console.log("Error occurred while adding a todoIteration!");
+        console.log("Error occurred while adding a todo iteration!");
         res.status(err.error.statusCode).send(err);
       });
   }
   else {
     res.status(403).send(accessDeniedErrorResponse);
   }
+};
 
+exports.end_todo_iteration = (req, res) => {
+  console.log("req.body:");
+  console.log(req.body);
+
+  let userIdsMatching = compareUserIdsInTokenAndRequest(
+    req.body.userId,
+    req.body.userDataFromToken.userId
+  );
+
+  if(userIdsMatching) {
+    todosService
+      .endTodoIteration(req.body.userId, req.body.todoId)
+      .then((endTodoIterationesponse) => {
+        res.send(endTodoIterationesponse);
+      })
+      .catch((err) => {
+        console.log("Error occurred while ending the latest todo iteration!");
+        res.status(err.error.statusCode).send(err);
+      });
+  }
+  else {
+    res.status(403).send(accessDeniedErrorResponse);
+  }
+};
+
+exports.mark_todo_as_done = (req, res) => {
+  console.log("req.body:");
+  console.log(req.body);
+
+  let userIdsMatching = compareUserIdsInTokenAndRequest(
+    +req.body.userId,
+    req.body.userDataFromToken.userId
+  );
+
+  if(userIdsMatching) {
+    todosService
+      .markTodoAsDone(req.body.userId, req.body.todoId)
+      .then((markTodoAsDoneResponse) => {
+        res.send(markTodoAsDoneResponse);
+      })
+      .catch((err) => {
+        console.log("Error occurred while marking a todo as done!");
+        res.status(err.error.statusCode).send(err);
+      });
+  }
+  else {
+    res.status(403).send(accessDeniedErrorResponse);
+  }
 };
 
 function compareUserIdsInTokenAndRequest(userIdFromReq, userIdFromToken) {

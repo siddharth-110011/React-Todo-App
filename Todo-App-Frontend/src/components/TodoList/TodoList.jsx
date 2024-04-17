@@ -103,7 +103,7 @@ export function TodoList({ user }) {
   // console.log(todosData);
 
   const todos = todosData.map((todo, index) => {
-    return <Todo key={todo.todoId} todo={todo} index={index} />;
+    return <Todo key={todo.todoId} todo={todo} userId={user.userId} index={index} />;
   });
 
   const slicedTodos = todos.slice(

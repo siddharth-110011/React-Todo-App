@@ -118,15 +118,48 @@ export function getFormattedDateTimeForDateTimeInput(dateStr) {
 export function getTimeTook(startDateStr, endDateStr) {
   let startDate = new Date(startDateStr);
   let endDate = new Date(endDateStr);
-  let timeTook = (endDate - startDate) / (1000 * 3600);
-  let hours = Math.floor(timeTook);
-  let minutes = Math.round((timeTook - hours) * 60);
 
-  return hours + hours > 1
-    ? "hrs "
-    : "hr " + minutes + minutes > 1
-    ? "mins"
-    : "min";
+  let totalTimeTookInHours = (endDate - startDate) / (1000*3600);
+  let hoursTook = Math.floor(totalTimeTookInHours);
+  let hoursTookFormatted = "";
+
+  let totalTimeTookInMinutes = (totalTimeTookInHours - hoursTook) * 60;
+  let minutesTook = Math.floor(totalTimeTookInMinutes);
+  let minutesTookFormatted = "";
+
+
+  let totalTimeTookInSeconds= (totalTimeTookInMinutes - minutesTook) * 60;
+  let secondsTook = Math.round(totalTimeTookInSeconds);
+  let secondsTookFormatted = "";
+
+  let timeTookFormatted = "";
+  
+  if(hoursTook > 0) {
+    if(hoursTook > 1) {
+      hoursTookFormatted = hoursTook + "hrs";
+    }
+    else {
+      hoursTookFormatted = hoursTook + "hr";
+    }
+  }
+
+  if(minutesTook > 0) {
+    if(minutesTook > 1) {
+      minutesTookFormatted = minutesTook + "mins";
+    }
+    else {
+      minutesTookFormatted = minutesTook + "min";
+    }
+  }
+
+  if(secondsTook > 0) {
+    secondsTookFormatted = secondsTook + "s";
+  }
+
+  timeTookFormatted = (hoursTookFormatted + " " + minutesTookFormatted + 
+  " " + secondsTookFormatted);
+
+  return timeTookFormatted.trim();
 }
 
 export function getFormmattedTimeZoneOffset(offset) {

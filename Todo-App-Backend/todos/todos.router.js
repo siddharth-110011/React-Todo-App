@@ -35,9 +35,21 @@ router.delete(
 );
 
 router.post(
-  "/iteration",
+  "/iteration/add",
   usersController.authenticate_token,
   todosController.add_todo_iteration
+);
+
+router.post(
+  "/iteration/end",
+  usersController.authenticate_token,
+  todosController.end_todo_iteration
+);
+
+router.post(
+  "/done",
+  usersController.authenticate_token,
+  todosController.mark_todo_as_done
 );
 
 module.exports = router;

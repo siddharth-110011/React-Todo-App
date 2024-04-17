@@ -12,6 +12,7 @@ import { TodosContext } from "../../TodosContext.js";
 import {
   transformTodoListBackendData,
   getFormattedDateTimeForUI,
+  getTimeTook,
 } from "../../utils/utility.js";
 
 export const TodoDetails = ({ user }) => {
@@ -34,7 +35,7 @@ export const TodoDetails = ({ user }) => {
           `http://localhost:3001/todos/detail?userId=${user.userId}&todoId=${todoId}`,
           {
             method: "GET",
-            credentials: "include"
+            credentials: "include",
           }
         );
 
@@ -116,13 +117,18 @@ export const TodoDetails = ({ user }) => {
   }
 
   async function handleDeleteTodo() {
-    let shouldDelete = await confirm("Are you sure you want to delete this task?");
+    let shouldDelete = await confirm(
+      "Are you sure you want to delete this task?"
+    );
     console.log(shouldDelete);
     if (shouldDelete) {
-      const response = await fetch(`http://localhost:3001/todos?userId=${user.userId}&todoId=${+todoId}`, {
-        method: "DELETE",
-        credentials: "include"
-      });
+      const response = await fetch(
+        `http://localhost:3001/todos?userId=${user.userId}&todoId=${+todoId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
       const data = await response.json();
       console.log(data);
       setTodosData(
@@ -138,17 +144,51 @@ export const TodoDetails = ({ user }) => {
     }
   }
 
+  async function handleDone() {
+    let markAsDone = await confirm(
+      "Are you sure you want to mark this task as done?"
+    );
+
+    if (markAsDone) {
+      const response = await fetch("http://localhost:3001/todos/done", {
+        method: "Post",
+        body: JSON.stringify({ userId: user.userId, todoId: +todoId }),
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      let data = await response.json();
+      console.log(data);
+
+      if (data.mark_todo_as_done_status === "todo_marked_as_done") {
+        setTodosData(
+          todosData.map((t) => {
+            if (t.todoId === +todoId) {
+              return { ...t, todoStatus: "Done" };
+            } else {
+              return t;
+            }
+          })
+        );
+        setTodoDetails({...todoDetails, todoStatus: "Done"});
+      }
+    }
+  }
+
   return !isLoading ? (
     <>
       <Card className={styles["todo-details-container"]}>
         <h2>{todoDetails.todoName}</h2>
         <div className={styles["action-buttons-container"]}>
           {/* <button type="Submit">Edit</button> */}
-          <Button
-            value="Edit"
-            className={styles["add-task-btn"]}
-            onClick={handleShowEditTask}
-          />
+          {todoDetails.todoStatus !== "Done" ? (
+            <Button
+              value="Edit"
+              className={styles["add-task-btn"]}
+              onClick={handleShowEditTask}
+            />
+          ) : null}
           <Button
             value="Go back to Todo list"
             onClick={handleNavigationToTodoList}
@@ -224,7 +264,11 @@ export const TodoDetails = ({ user }) => {
                     <td>
                       {getFormattedDateTimeForUI(iterationDetail.startDateTime)}
                     </td>
-                    <td>{iterationDetail.endDateTime || "NA"}</td>
+                    <td>
+                      {iterationDetail.endDateTime
+                        ? getFormattedDateTimeForUI(iterationDetail.endDateTime)
+                        : "NA"}
+                    </td>
                     <td>
                       {iterationDetail.endDateTime
                         ? getTimeTook(
@@ -239,33 +283,37 @@ export const TodoDetails = ({ user }) => {
             </table>
           </section>
         ) : null}
-        <section className={styles["todo-danger-zone-section"]}>
-          <h4>Danger Zone:</h4>
-          <ul>
-            <li className={styles["todo-danger-zone-control"]}>
-              <div className={styles["todo-danger-control-description"]}>
-                <strong>Mark this task as done:</strong>
-                <div>
-                  Once this task is marked as Done, there is no going back.
+        {todoDetails.todoStatus !== "Done" ? (
+          <section className={styles["todo-danger-zone-section"]}>
+            <h4>Danger Zone:</h4>
+            <ul>
+              <li className={styles["todo-danger-zone-control"]}>
+                <div className={styles["todo-danger-control-description"]}>
+                  <strong>Mark this task as done:</strong>
+                  <div>
+                    Once this task is marked as Done, there is no going back.
+                  </div>
                 </div>
-              </div>
-              <div>
-                <button type="Submit">Done</button>
-              </div>
-            </li>
-            <li className={styles["todo-danger-zone-control"]}>
-              <div>
-                <strong>Delete this task:</strong>
-                <div>Once this task is deleted, there is no going back.</div>
-              </div>
-              <div>
-                <button type="Submit" onClick={handleDeleteTodo}>
-                  Delete this task
-                </button>
-              </div>
-            </li>
-          </ul>
-        </section>
+                <div>
+                  <button type="Submit" onClick={handleDone}>
+                    Done
+                  </button>
+                </div>
+              </li>
+              <li className={styles["todo-danger-zone-control"]}>
+                <div>
+                  <strong>Delete this task:</strong>
+                  <div>Once this task is deleted, there is no going back.</div>
+                </div>
+                <div>
+                  <button type="Submit" onClick={handleDeleteTodo}>
+                    Delete this task
+                  </button>
+                </div>
+              </li>
+            </ul>
+          </section>
+        ) : null}
       </Card>
       {isEditing ? (
         <>

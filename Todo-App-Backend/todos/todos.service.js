@@ -223,9 +223,84 @@ exports.deleteTodo = async (userId, todoId) => {
 
 exports.addTodoIteration = async (userId, todoId) => {
   // Add the todoIteration to the database.
+
+  const connection = await db.getConnectionFromPool();
+
   try {
     const promise = new Promise((resolve, reject) => {
-      const sql = `call add_todo_iteration (?, ?);`;
+      const sql = `call add_todo_iteration (?, ?, @add_iteration_status);
+      select @add_iteration_status as add_iteration_status;`;
+      const pool = db.pool;
+
+      connection.query(sql, [userId, todoId], function (err, result) {
+        if (err) {
+          const internalError = new Error(err.message);
+          reject(
+            getErrorObject(
+              internalError,
+              500,
+              "Something went wrong in the server!"
+            )
+          );
+        } else {
+          let addTodoIterationResponse = result[1][0];
+          console.log(addTodoIterationResponse);
+          resolve(addTodoIterationResponse);
+        }
+      });
+    });
+
+    const result = await promise;
+
+    return result;
+  } catch (error) {
+    sendErrorResponse(error);
+  }
+};
+
+exports.endTodoIteration = async (userId, todoId) => {
+  // Add the todoIteration to the database.
+
+  const connection = await db.getConnectionFromPool();
+
+  try {
+    const promise = new Promise((resolve, reject) => {
+      const sql = `call end_todo_iteration (?, ?, @end_iteration_status);
+      select @end_iteration_status as end_iteration_status;`;
+      const pool = db.pool;
+
+      connection.query(sql, [userId, todoId], function (err, result) {
+        if (err) {
+          const internalError = new Error(err.message);
+          reject(
+            getErrorObject(
+              internalError,
+              500,
+              "Something went wrong in the server!"
+            )
+          );
+        } else {
+          let endTodoIterationResponse = result[1][0]
+          resolve(endTodoIterationResponse);
+          console.log(endTodoIterationResponse);
+        }
+      });
+    });
+
+    const result = await promise;
+
+    return result;
+  } catch (error) {
+    sendErrorResponse(error);
+  }
+};
+
+exports.markTodoAsDone = async (userId, todoId) => {
+  // Delete todo correpsonding to (userId, todoId).
+  try {
+    const promise = new Promise((resolve, reject) => {
+      const sql = `call mark_todo_as_done (?, ?, @mark_todo_as_done_status);
+      select @mark_todo_as_done_status as mark_todo_as_done_status;`;
       const pool = db.pool;
 
       pool.query(sql, [userId, todoId], function (err, result) {
@@ -239,9 +314,9 @@ exports.addTodoIteration = async (userId, todoId) => {
             )
           );
         } else {
-          console.log("Todo iteration added.");
-          console.log(result);
-          resolve();
+          let markTodoAsDoneResponse = result[1][0]
+          resolve(markTodoAsDoneResponse);
+          console.log(markTodoAsDoneResponse);
         }
       });
     });
@@ -253,3 +328,4 @@ exports.addTodoIteration = async (userId, todoId) => {
     sendErrorResponse(error);
   }
 };
+
